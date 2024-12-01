@@ -3,7 +3,7 @@ import json
 import numpy as np
 from tqdm import tqdm
 
-from solution_base import solve_task
+from solution_code_gen import solve_task
 
 
 def fmt_grid(inp):
@@ -31,7 +31,9 @@ def validate_answers(predictions, targets):
     
 def run_eval():
     res = []
-    for task_filename in tqdm(os.listdir('ARC-AGI/data/evaluation')):
+    for i, task_filename in tqdm(enumerate(os.listdir('ARC-AGI/data/evaluation'))):
+        # if i < 0:
+        #     continue
         with open('ARC-AGI/data/evaluation/' + task_filename, 'r') as f:
             task_data = json.load(f)
             correct_answers = [test_task['output'] for test_task in task_data['test']]

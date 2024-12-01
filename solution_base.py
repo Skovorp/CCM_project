@@ -1,5 +1,11 @@
 import pandas as pd
 from langchain_openai import ChatOpenAI
+from dotenv import load_dotenv
+import os
+
+from prompts import direct_answer_prompt
+
+load_dotenv()
 
 llm = ChatOpenAI(
     model="gpt-4o-mini-2024-07-18",
@@ -7,13 +13,13 @@ llm = ChatOpenAI(
     max_tokens=None,
     timeout=None,
     max_retries=2,
-    api_key="HUIUHUIHUI",
+    api_key=os.getenv('OPENAI_KEY'),
 )
 json_llm = llm.bind(response_format={"type": "json_object"})
 
 class HumanDataGetter():
     def __init__(self):
-        self.df = pd.read_csv('/Users/ksc/PycharmProjects/CCM/CCM_project/h-arc/data/data/clean_data.csv')
+        self.df = pd.read_csv('/Users/ksc/PycharmProjects/CCM/CCM_project/h-arc/data/data/clean_data.csv', low_memory=False)
 
     def get_by_task_id(self, task_name):
         candidates = self.df[self.df['task_name'] == task_name]
@@ -22,20 +28,8 @@ class HumanDataGetter():
     
 
 def get_answer_by_gpt(task, test_input):
-    ans = json_llm.invoke([
-        (
-            "system",
-            "You are a genius solving puzzles.",
-        ),
-        ("human", f"""Help me solve this puzzle. Here are training examples:
-{task['train']}
-
-Here are possible ideas of this puzzle solutions: 
-{task['explanations'][:5]}
-
-Now give me the output for this input. Output stricly a json of the grid {{'output': [...]}}: 
-{test_input}""")
-    ])
+    # print(task['explanations'])
+    ans = json_llm.invoke(direct_answer_prompt(task['train'], task['explanations'][:5], test_input))
     cnt = ans.content
     try:
         return eval(cnt)['output']
