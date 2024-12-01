@@ -44,6 +44,7 @@ def run_eval():
             })
             # assert len(answers) == num_answers, f"You are outputing {len(answers)} answers, it should be {num_answers}"
             res.append(validate_answers(answers, correct_answers))
+            print(f"Correct {sum(res)} / Tasks {len(res)}")
     res = np.array(res)
     print(f"Correct answers: {res.sum()}")
     print(f"Accuracy: {res.mean() * 100:.2f}%")

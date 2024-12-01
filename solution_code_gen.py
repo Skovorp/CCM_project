@@ -2,6 +2,7 @@ import pandas as pd
 from langchain_openai import ChatOpenAI
 from dotenv import load_dotenv
 import os
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from solution_base import HumanDataGetter
 from prompts import code_gen_prompt
@@ -23,29 +24,37 @@ llm = ChatOpenAI(
 MAX_FEEDBACK_ATTEMPTS = 2
 MAX_PROGRAMS = 16
 
-# TODO: асинк
-# если хоть сколько-то решит - победа
 
+
+def process_hypothesis(hyp, task, test_inputs):
+    prompt = code_gen_prompt(task['train'], hyp)
+    for _ in range(MAX_FEEDBACK_ATTEMPTS):
+        response = llm.invoke(prompt).content
+        code_res = eval_code(response, task['train'], test_inputs)
+        
+        if 'test_answers' in code_res:
+            return code_res['test_answers']
+        
+        res_promt = format_code_run_results(code_res)
+        prompt = [*prompt, ('assistant', response), ('user', res_promt)]
+    return None
 
 
 def code_gen_pipeline(task, test_inputs):
-    # possible_hyp = [max(task['explanations'], key=len) for _ in range(MAX_PROGRAMS)]
-    H = """1. Double the size of the original grid, creating a larger grid.
-2. For each colored square in the original grid, create a 2x2 block of the same color in the corresponding position on the larger grid.
-3. Use blue squares to form diagonal lines. Starting from the bottom-right corner of any 2x2 colored block, fill diagonally outward towards the bottom-right. Also from top-left corner of any 2x2 colored block, fill diagonally outward towards the top-left."""
+    H = [max(task['explanations'], key=len) for _ in range(MAX_PROGRAMS)]
     possible_hyp = [H for _ in range(MAX_PROGRAMS)]
-    for hyp in possible_hyp:
-        prompt = code_gen_prompt(task['train'], hyp)
-        for _ in range(MAX_FEEDBACK_ATTEMPTS):
-            response = llm.invoke(prompt).content
-            code_res = eval_code(response, task['train'], test_inputs)
-            
-            if 'test_answers' in code_res:
-                return code_res['test_answers']
-            
-            res_promt = format_code_run_results(code_res)
-            prompt = [*prompt, ('assistant', response), ('user', res_promt)]
+    
+    results = []
+    with ThreadPoolExecutor(max_workers=len(possible_hyp)) as executor:
+        future_to_hyp = [
+            executor.submit(process_hypothesis, hyp, task, test_inputs) for hyp in possible_hyp
+        ]
+        for future in as_completed(future_to_hyp):
+            result = future.result()
+            if result is not None:  # If a valid result is found, return it immediately
+                return result
         
+    return [[]]    
     # print('\n----\n'.join(task['explanations']))
     # hypothesis = input()
     # hypothesis = ' | '.join(sorted(task['explanations'], key=len)[-5:])
