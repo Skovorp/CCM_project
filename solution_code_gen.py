@@ -64,7 +64,7 @@ def code_gen_pipeline(task, test_inputs):
             executor.submit(process_hypothesis, hyp, task, test_inputs) for hyp in possible_hyp
         ]
         for future in as_completed(future_to_hyp):
-            result = future.result()
+            result = future.result(timeout=40)
             if result is not None:  # If a valid result is found, return it immediately
                 return result
         

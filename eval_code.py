@@ -1,5 +1,6 @@
 import numpy as np
 import traceback
+import random
 
 def eval_code(function_declaration, train_cases, test_inputs):
     function_declaration = fix_code(function_declaration)
@@ -24,7 +25,10 @@ def eval_code(function_declaration, train_cases, test_inputs):
         tgt = np.array(case['output'])
         result = None
         try:
+            k = random.random()
+            print(f"running code {k}")
             result = local_scope['transform_grid'](inp)
+            print(f"finished code {k}")
             o['result'] = result.tolist()
         except Exception as e:
             o['error'] = traceback.format_exc()
