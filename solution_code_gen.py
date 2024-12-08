@@ -2,7 +2,7 @@ import pandas as pd
 from langchain_openai import ChatOpenAI
 from dotenv import load_dotenv
 import os
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ProcessPoolExecutor, TimeoutError, as_completed
 
 from solution_base import HumanDataGetter
 from prompts import code_gen_prompt
@@ -59,15 +59,17 @@ def code_gen_pipeline(task, test_inputs):
     possible_hyp = [H for _ in range(MAX_PROGRAMS)]
     
     results = []
-    with ThreadPoolExecutor(max_workers=len(possible_hyp)) as executor:
+    with ProcessPoolExecutor(max_workers=len(possible_hyp)) as executor:
         future_to_hyp = [
             executor.submit(process_hypothesis, hyp, task, test_inputs) for hyp in possible_hyp
         ]
         for future in as_completed(future_to_hyp):
-            result = future.result(timeout=40)
-            if result is not None:  # If a valid result is found, return it immediately
-                return result
-        
+            try:
+                result = future.result(timeout=40)
+                if result is not None:  # If a valid result is found, return it immediately
+                    return result
+            except TimeoutError:
+                print("A hypothesis timed out and was skipped.")
     return [[]]    
     # print('\n----\n'.join(task['explanations']))
     # hypothesis = input()
