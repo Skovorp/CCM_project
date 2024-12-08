@@ -8,17 +8,30 @@ from solution_base import HumanDataGetter
 from prompts import code_gen_prompt
 from eval_code import eval_code
 from prompts import format_code_run_results
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_community.chat_models import ChatOpenAI
+import os
+from typing import Optional
 
 load_dotenv()
 
-llm = ChatOpenAI(
-    # model="gpt-4o-mini-2024-07-18",
-    model="gpt-4o-2024-08-06",
-    temperature=0.7,
-    max_tokens=None,
-    timeout=None,
-    max_retries=2,
-    api_key=os.getenv('OPENAI_KEY'),
+class ChatOpenRouter(ChatOpenAI):
+    openai_api_base: str
+    openai_api_key: str
+    model_name: str
+
+    def __init__(self,
+                 model_name: str,
+                 openai_api_key: Optional[str] = None,
+                 openai_api_base: str = "https://openrouter.ai/api/v1",
+                 **kwargs):
+        openai_api_key = os.getenv('OPENROUTER_API_KEY')
+        super().__init__(openai_api_base=openai_api_base,
+                         openai_api_key=openai_api_key,
+                         model_name=model_name, **kwargs)
+        
+llm = ChatOpenRouter(
+    model_name="qwen/qwen-2.5-coder-32b-instruct",
 )
 
 MAX_FEEDBACK_ATTEMPTS = 2
