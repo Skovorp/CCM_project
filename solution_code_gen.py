@@ -70,7 +70,7 @@ def code_gen_pipeline(task, test_inputs, executor):
                 return result
         except TimeoutError:
             print("A hypothesis timed out and was skipped.")
-    return [[]]    
+    return [[] for i in range(len(test_inputs))]    
     # print('\n----\n'.join(task['explanations']))
     # hypothesis = input()
     # hypothesis = ' | '.join(sorted(task['explanations'], key=len)[-5:])
