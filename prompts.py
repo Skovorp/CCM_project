@@ -42,7 +42,8 @@ def format_train_examples(input_cases):
 def format_code_run_results(results, hypothesis=None):
     res = "Unfortunately this code didnt work. Here are the errors it made.\n"
     if 'declaration_error' in results:
-        pass
+        res += f"The code declaration didnt work. Here is the error it produced: {example['declaration_error']}"
+        return res 
     for i, example in enumerate(results):
         res += f"Case {i}:\n"
         res += f"Input:\n{plt_mx(example['input'])}\n"
