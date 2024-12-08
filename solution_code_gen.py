@@ -81,7 +81,7 @@ def code_gen_pipeline(task, test_inputs, executor):
 
     
 hd = HumanDataGetter()    
-def solve_task(task):
+def solve_task(task, executor):
     task['explanations'] = hd.get_by_task_id(task['task_name'])
     
     ans = []
