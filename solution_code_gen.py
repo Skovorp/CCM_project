@@ -32,6 +32,7 @@ class ChatOpenRouter(ChatOpenAI):
         
 llm = ChatOpenRouter(
     model_name="qwen/qwen-2.5-coder-32b-instruct",
+    max_tokens = 1000
 )
 
 MAX_FEEDBACK_ATTEMPTS = 2
