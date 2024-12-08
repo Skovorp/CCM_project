@@ -54,22 +54,22 @@ def process_hypothesis(hyp, task, test_inputs):
     return None
 
 
-def code_gen_pipeline(task, test_inputs):
+def code_gen_pipeline(task, test_inputs, executor):
     H = [max(task['explanations'], key=len) for _ in range(MAX_PROGRAMS)]
     possible_hyp = [H for _ in range(MAX_PROGRAMS)]
     
     results = []
-    with ProcessPoolExecutor(max_workers=len(possible_hyp)) as executor:
-        future_to_hyp = [
-            executor.submit(process_hypothesis, hyp, task, test_inputs) for hyp in possible_hyp
-        ]
-        for future in as_completed(future_to_hyp):
-            try:
-                result = future.result(timeout=40)
-                if result is not None:  # If a valid result is found, return it immediately
-                    return result
-            except TimeoutError:
-                print("A hypothesis timed out and was skipped.")
+
+    future_to_hyp = [
+        executor.submit(process_hypothesis, hyp, task, test_inputs) for hyp in possible_hyp
+    ]
+    for future in as_completed(future_to_hyp):
+        try:
+            result = future.result(timeout=40)
+            if result is not None:  # If a valid result is found, return it immediately
+                return result
+        except TimeoutError:
+            print("A hypothesis timed out and was skipped.")
     return [[]]    
     # print('\n----\n'.join(task['explanations']))
     # hypothesis = input()
@@ -86,7 +86,7 @@ def solve_task(task):
     
     ans = []
 
-    out = code_gen_pipeline(task, task['test_inputs'])
+    out = code_gen_pipeline(task, task['test_inputs'], executor)
     for el in out:
         ans.append({
                 'attempt_1': el,

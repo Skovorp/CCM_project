@@ -2,6 +2,7 @@ import os
 import json
 import numpy as np
 from tqdm import tqdm
+from concurrent.futures import ProcessPoolExecutor, TimeoutError, as_completed
 
 from solution_code_gen import solve_task
 
@@ -31,20 +32,21 @@ def validate_answers(predictions, targets):
     
 def run_eval():
     res = []
-    for i, task_filename in tqdm(enumerate(os.listdir('CCM_project/ARC-AGI/data/evaluation'))):
-        if i < 3:
-             continue
-        with open('CCM_project/ARC-AGI/data/evaluation/' + task_filename, 'r') as f:
-            task_data = json.load(f)
-            correct_answers = [test_task['output'] for test_task in task_data['test']]
-            answers = solve_task({
-                'train': task_data['train'],
-                'test_inputs': [test_task['input'] for test_task in task_data['test']],
-                'task_name': task_filename
-            })
-            # assert len(answers) == num_answers, f"You are outputing {len(answers)} answers, it should be {num_answers}"
-            res.append(validate_answers(answers, correct_answers))
-            print(f"Correct {sum(res)} / Tasks {len(res)}")
+    with ProcessPoolExecutor(max_workers=8) as executor:
+        for i, task_filename in tqdm(enumerate(os.listdir('CCM_project/ARC-AGI/data/evaluation'))):
+            if i < 3:
+                continue
+            with open('CCM_project/ARC-AGI/data/evaluation/' + task_filename, 'r') as f:
+                task_data = json.load(f)
+                correct_answers = [test_task['output'] for test_task in task_data['test']]
+                answers = solve_task({
+                    'train': task_data['train'],
+                    'test_inputs': [test_task['input'] for test_task in task_data['test']],
+                    'task_name': task_filename
+                }, executor)
+                # assert len(answers) == num_answers, f"You are outputing {len(answers)} answers, it should be {num_answers}"
+                res.append(validate_answers(answers, correct_answers))
+                print(f"Correct {sum(res)} / Tasks {len(res)}")
     res = np.array(res)
     print(f"Correct answers: {res.sum()}")
     print(f"Accuracy: {res.mean() * 100:.2f}%")
