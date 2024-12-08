@@ -32,8 +32,8 @@ def validate_answers(predictions, targets):
 def run_eval():
     res = []
     for i, task_filename in tqdm(enumerate(os.listdir('CCM_project/ARC-AGI/data/evaluation'))):
-        # if i < 0:
-        #     continue
+        if i < 3:
+             continue
         with open('CCM_project/ARC-AGI/data/evaluation/' + task_filename, 'r') as f:
             task_data = json.load(f)
             correct_answers = [test_task['output'] for test_task in task_data['test']]

@@ -21,7 +21,8 @@ Hint: You may want to use the following guidance to implement the function:
 The number in the input grid can be mapped to the following colors:0:black; 1:blue; 2:red; 3:green;
 4:yellow; 5:grey; 6:fuschia; 7:orange; 8:teal; 9:brown
 Just reply with the implementation of transform_grid(input_grid: np.ndarray[int]) in Python and nothing
-else, each cell in the output should only be numbers from 0 to 9. Add docstring for the function explaining the algorythm"""),
+else, each cell in the output should only be numbers from 0 to 9. Don't do any hardcoding of the matrices.
+Write generalizable code."""),
 ]
 
 def plt_mx(matrix):
@@ -42,7 +43,7 @@ def format_train_examples(input_cases):
 def format_code_run_results(results, hypothesis=None):
     res = "Unfortunately this code didnt work. Here are the errors it made.\n"
     if 'declaration_error' in results:
-        res += f"The code declaration didnt work. Here is the error it produced: {example['declaration_error']}"
+        res += f"The code declaration didnt work. Here is the error it produced: {results['declaration_error']}"
         return res 
     for i, example in enumerate(results):
         res += f"Case {i}:\n"

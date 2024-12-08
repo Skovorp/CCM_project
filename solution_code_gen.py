@@ -35,7 +35,7 @@ llm = ChatOpenRouter(
 )
 
 MAX_FEEDBACK_ATTEMPTS = 2
-MAX_PROGRAMS = 16
+MAX_PROGRAMS = 8
 
 
 

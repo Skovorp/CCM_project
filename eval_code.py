@@ -3,11 +3,12 @@ import traceback
 
 def eval_code(function_declaration, train_cases, test_inputs):
     function_declaration = fix_code(function_declaration)
-    # print(f"GOT CODE:\n{function_declaration}")
     local_scope = {}
     try:
         exec(function_declaration, None, local_scope)
     except Exception as e:
+        print(f"GOT CODE:\n{function_declaration}")
+        print('declaration error')
         return {"declaration_error": traceback.format_exc()}
     # print("VALID FUNCTION!")
 
@@ -40,8 +41,9 @@ def eval_code(function_declaration, train_cases, test_inputs):
 
 def fix_code(code):
     code = code.strip()
-    if code[:9] == "```python":
-        code = code[9:]
-    if code[-3:] == "```":
-        code = code[:-3]
+    code = code.split("```")[1]
+    code = code.strip()
+    
+    if code[:6] == "python":
+        code = code[6:]
     return code
