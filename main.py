@@ -34,7 +34,7 @@ def run_eval():
     res = []
     with ProcessPoolExecutor(max_workers=8) as executor:
         for i, task_filename in tqdm(enumerate(os.listdir('CCM_project/ARC-AGI/data/evaluation'))):
-            if i < 3:
+            if i < 0:
                 continue
             with open('CCM_project/ARC-AGI/data/evaluation/' + task_filename, 'r') as f:
                 task_data = json.load(f)

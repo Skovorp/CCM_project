@@ -5,7 +5,7 @@ import os
 from concurrent.futures import ProcessPoolExecutor, TimeoutError, as_completed
 
 from solution_base import HumanDataGetter
-from prompts import code_gen_prompt
+from prompts import code_gen_prompt, hypothesis_synth_prompt
 from eval_code import eval_code
 from prompts import format_code_run_results
 from langchain_core.prompts import ChatPromptTemplate
@@ -56,8 +56,9 @@ def process_hypothesis(hyp, task, test_inputs):
 
 def code_gen_pipeline(task, test_inputs, executor):
     H = [max(task['explanations'], key=len) for _ in range(MAX_PROGRAMS)]
+    #prompt = hypothesis_synth_prompt(task['train'], task['explanations'])
+    #llm_hypothesis = llm.invoke(prompt).content
     possible_hyp = [H for _ in range(MAX_PROGRAMS)]
-    
     results = []
 
     future_to_hyp = [
@@ -78,8 +79,6 @@ def code_gen_pipeline(task, test_inputs, executor):
     # print(f"PICKED: {hypothesis}")
     
 
-
-    
 hd = HumanDataGetter()    
 def solve_task(task, executor):
     task['explanations'] = hd.get_by_task_id(task['task_name'])
